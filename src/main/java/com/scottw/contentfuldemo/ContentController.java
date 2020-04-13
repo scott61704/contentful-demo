@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -15,6 +16,7 @@ import com.contentful.java.cda.CDAAsset;
 import com.contentful.java.cda.CDAClient;
 import com.contentful.java.cda.CDAEntry;
 import com.contentful.java.cda.CDAResource;
+import com.contentful.java.cda.QueryOperation;
 
 @RestController
 //@RequestMapping("contentful-demo")
@@ -74,7 +76,7 @@ public class ContentController {
 		return output;
 	}
 
-	@RequestMapping(value = "/contentful-demo/products2", method = RequestMethod.GET)
+	@RequestMapping(value = {"/contentful-demo/products2", "/contentful-demo/productList"}, method = RequestMethod.GET)
 	public String getProducts2() {
 
 		CDAClient client = getClient();
@@ -122,15 +124,16 @@ public class ContentController {
 			if(item.contentType().id().equals("category")) {
 				output = output + item.getField("title") + "<br>";
 			}
-			output = output + "contentType id = " + item.contentType().id() + ", name = " + item.contentType().name() + "<br><br>";
+			output = output + "contentType id = " + item.contentType().id() + ", name = " + item.contentType().name() + "<br>";
+			output = output + "id = " + item.id() + "<br><br>";
 			//Object obj = (Object) item.rawFields().get("productName");
 			// Get a null pointer exception if the commented out code is run.
 			//output = output + obj.getClass() + "<br><br>";
 			//output = output + item.rawFields().toString() + "<br><br>";
 
 			for(String key: item.rawFields().keySet()) {
-				output = output + key + " = " + item.getField(key) + "<br>";
-				output = output + " className = " + item.getField(key).getClass().toString() + "<br>";
+				output = output + key + " = " + item.getField(key);
+				output = output + ", className = " + item.getField(key).getClass().toString() + "<br>";
 			}
 			
 			output = output + "**************************************************************************<br><br>";
@@ -208,6 +211,107 @@ public class ContentController {
 			
 */		}
 
+		return output;
+	}
+	@RequestMapping(value = {"contentful-demo/productDetails/{id}"}, method = RequestMethod.GET)
+	public String getProductDetails(@PathVariable String id) {
+
+		CDAClient client = getClient();
+		
+		// Fetch entries
+		CDAEntry item  = 
+		    client
+		        .fetch(CDAEntry.class)
+		        .withContentType("product")
+		        .one(id);
+		
+//		array.items().forEach((item) -> System.out.println(item.attrs().toString()));
+
+	
+		String output = "";
+		
+		output = output + "Product Name = " + item.getField("productName") + "<br><br>";
+
+			for(String key: item.rawFields().keySet()) {
+				output = output + key + " = " + item.getField(key);
+				output = output + ", className = " + item.getField(key).getClass().toString() + "<br>";
+			}
+			
+			output = output + "**************************************************************************<br><br>";
+/*			Product product = client
+				    .observeAndTransform(Product.class)
+				    .one(entryId)
+				    .blockingSingle();
+		
+
+			System.out.println(item.attrs().toString()+"\n\r");
+			System.out.println(product.toString()+"\n\r");
+
+			output = output + product.toString() + "<br><br>";
+			
+			//Doing this for now, as I don't know if you can unwrap an asset
+			for(image: product.images) {
+				System.out.println("image fields = " + image.id() + ", " + image.mimeType() + ", " + image.title() + ", " + image.url() + "\n\r");
+				output = output + "image fields = " + image.id() + ", " + image.mimeType() + ", " + image.title() + ", " + image.url() + "<br><br>";
+			}
+
+//			System.out.println("product details - id = " + entryId);
+//			System.out.println(product.productDescription + "\n\r");
+			
+*/		 
+		
+/*
+		for(CDAAsset item : assetValues) {
+			String assetId = item.id();
+			
+			System.out.println("asset attrs = " + item.attrs().toString());
+
+			//System.out.println("rawFields = " + item.rawFields().toString());
+			output = output + item.type().toString() + "<br><br>";
+			
+			if(item.type(). .contentType().id().equals("product")) {
+				output = output + item.getField("productName") + "<br>";
+			}
+			if(item.contentType().id().equals("brand")) {
+				output = output + item.getField("companyName") + "<br>";
+			}
+			if(item.contentType().id().equals("category")) {
+				output = output + item.getField("title") + "<br>";
+			}
+			output = output + "contentType id = " + item.contentType().id() + ", name = " + item.contentType().name() + "<br><br>";
+			//Object obj = (Object) item.rawFields().get("productName");
+			// Get a null pointer exception if the commented out code is run.
+			//output = output + obj.getClass() + "<br><br>";
+			//output = output + item.rawFields().toString() + "<br><br>";
+
+			for(String key: item.rawFields().keySet()) {
+				output = output + key + " = " + item.getField(key) + "<br>";
+				output = output + " className = " + item.getField(key).getClass().toString() + "<br>";
+			}
+			
+			output = output + "**************************************************************************<br><br>";
+			Product product = client
+				    .observeAndTransform(Product.class)
+				    .one(entryId)
+				    .blockingSingle();
+		
+
+			System.out.println(item.attrs().toString()+"\n\r");
+			System.out.println(product.toString()+"\n\r");
+
+			output = output + product.toString() + "<br><br>";
+			
+			//Doing this for now, as I don't know if you can unwrap an asset
+			for(image: product.images) {
+				System.out.println("image fields = " + image.id() + ", " + image.mimeType() + ", " + image.title() + ", " + image.url() + "\n\r");
+				output = output + "image fields = " + image.id() + ", " + image.mimeType() + ", " + image.title() + ", " + image.url() + "<br><br>";
+			}
+
+//			System.out.println("product details - id = " + entryId);
+//			System.out.println(product.productDescription + "\n\r");
+			
+		}
+*/
 		return output;
 	}
 	@RequestMapping(value = "/contentful-demo/categories", method = RequestMethod.GET)
